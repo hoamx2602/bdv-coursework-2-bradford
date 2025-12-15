@@ -3,8 +3,26 @@ import math
 import pandas as pd
 import streamlit as st
 import plotly.graph_objects as go
+import html
 
-def weather_icon(rain_rate, solar_rad, wind_speed):
+
+def _safe_float(x):
+    try:
+        if x is None:
+            return None
+        v = float(x)
+        if math.isnan(v) or math.isinf(v):
+            return None
+        return v
+    except Exception:
+        return None
+
+
+def weather_icon(rain_rate, solar_rad, wind_speed=None):
+    """
+    Kept signature compatible with older calls.
+    wind_speed is optional; if sensor is unavailable pass None.
+    """
     rain_rate = _safe_float(rain_rate)
     solar_rad = _safe_float(solar_rad)
     wind_speed = _safe_float(wind_speed)
@@ -15,19 +33,11 @@ def weather_icon(rain_rate, solar_rad, wind_speed):
         return "🌦️", "Light rain"
     if solar_rad is not None and solar_rad >= 300:
         return "☀️", "Sunny"
+    # wind is optional; only use if meaningful
     if wind_speed is not None and wind_speed >= 8:
         return "💨", "Windy"
     return "☁️", "Cloudy"
 
-def wind_icon(wind_speed):
-    ws = _safe_float(wind_speed)
-    if ws is None:
-        return "🧭"
-    if ws >= 12:
-        return "🌪️"
-    if ws >= 8:
-        return "💨"
-    return "🧭"
 
 def temp_icon(temp_out):
     t = _safe_float(temp_out)
@@ -39,6 +49,7 @@ def temp_icon(temp_out):
         return "❄️"
     return "🌡️"
 
+
 def fmt(v, unit="", nd=2):
     if v is None or (isinstance(v, float) and (math.isnan(v) or math.isinf(v))):
         return "—"
@@ -48,40 +59,33 @@ def fmt(v, unit="", nd=2):
         return "—"
 
 def kpi_card(title: str, value: str, subtitle: str = "", icon: str = "•"):
+    # Force plain text (prevents markdown/code-block rendering issues)
+    title_t = html.escape(str(title))
+    value_t = html.escape(str(value)).replace("\n", "<br/>")
+    subtitle_t = html.escape(str(subtitle)).replace("\n", "<br/>")
+    icon_t = html.escape(str(icon))
+
     st.markdown(
-        f"""
-        <div style="
-          padding:16px;
-          border-radius:18px;
-          border:1px solid rgba(255,255,255,0.12);
-          background: rgba(255,255,255,0.08);
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
-          box-shadow: 0 10px 30px rgba(0,0,0,0.18);
-        ">
-          <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
-            <div style="
-              width:34px;height:34px;border-radius:10px;
-              display:flex;align-items:center;justify-content:center;
-              background: rgba(255,255,255,0.12);
-              font-size:18px;
-            ">{icon}</div>
-            <div style="font-size:0.95rem; color: rgba(255,255,255,0.85); font-weight:600;">
-              {title}
-            </div>
-          </div>
-
-          <div style="font-size:1.75rem; font-weight:800; color: rgba(255,255,255,0.96); line-height:1.15;">
-            {value}
-          </div>
-
-          <div style="font-size:0.9rem; color: rgba(255,255,255,0.72); margin-top:6px;">
-            {subtitle}
-          </div>
-        </div>
-        """,
+        f"""<div style="height:170px;padding:16px;border-radius:18px;
+border:1px solid rgba(255,255,255,0.12);
+background:rgba(255,255,255,0.08);
+backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+box-shadow:0 10px 30px rgba(0,0,0,0.18);
+display:flex;flex-direction:column;justify-content:space-between;">
+  <div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <div style="width:34px;height:34px;border-radius:10px;
+display:flex;align-items:center;justify-content:center;
+background:rgba(255,255,255,0.12);font-size:18px;">{icon_t}</div>
+      <div style="font-size:0.95rem;color:rgba(255,255,255,0.85);font-weight:600;">{title_t}</div>
+    </div>
+    <div style="font-size:1.85rem;font-weight:800;color:rgba(255,255,255,0.96);line-height:1.15;">{value_t}</div>
+  </div>
+  <div style="font-size:0.9rem;color:rgba(255,255,255,0.72);margin-top:10px;">{subtitle_t}</div>
+</div>""",
         unsafe_allow_html=True,
     )
+
 
 def gauge(title: str, value, vmin: float, vmax: float, suffix: str = ""):
     if value is None or (isinstance(value, float) and pd.isna(value)):
@@ -104,6 +108,7 @@ def gauge(title: str, value, vmin: float, vmax: float, suffix: str = ""):
     )
     return fig
 
+
 def inject_theme():
     st.markdown(
         """
@@ -119,14 +124,3 @@ def inject_theme():
         """,
         unsafe_allow_html=True,
     )
-
-def _safe_float(x):
-    try:
-        if x is None:
-            return None
-        v = float(x)
-        if math.isnan(v) or math.isinf(v):
-            return None
-        return v
-    except Exception:
-        return None
