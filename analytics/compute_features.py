@@ -10,7 +10,7 @@ from sklearn.metrics import silhouette_score
 from database.db import get_engine
 
 FEATURE_COLS = [
-    "temp_out", "out_hum", "bar", "wind_speed", "rain_rate", "solar_rad", "uv_index"
+    "temp_out", "out_hum", "bar", "rain_rate", "solar_rad", "uv_index"
 ]
 
 def load_curated() -> pd.DataFrame:
