@@ -5,7 +5,7 @@ import plotly.express as px
 import streamlit as st
 
 
-CORE_COLS = ["temp_out", "out_hum", "bar", "rain_rate", "solar_rad", "uv_index"]
+CORE_COLS = ["temp_out", "out_hum", "bar", "rain_rate", "solar_rad", "uv_index", "dew_pt"]
 
 
 def _available_cols(dfc):
