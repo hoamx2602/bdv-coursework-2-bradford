@@ -10,7 +10,7 @@ from sqlalchemy import text
 from database.db import get_engine
 from dashboard.components import inject_theme
 
-from dashboard.views import overview, daily_snapshot, trends, pca_regimes, andrews_curves, extremes
+from dashboard.views import overview, eda_explorer, daily_snapshot, trends, pca_regimes, andrews_curves, extremes
 
 st.set_page_config(page_title="Bradford Weather Dashboard", layout="wide")
 inject_theme()
@@ -63,15 +63,15 @@ def get_date_bounds():
 st.sidebar.title("🌦️ Bradford Weather")
 page = st.sidebar.radio(
     "Navigation",
-    ["Overview", "Daily Snapshot", "Trends", "PCA & Regimes", "Andrews Curves", "Extremes"],
-    index=1,
+    ["Overview", "Data Explorer (EDA)", "Daily Snapshot", "Trends", "PCA & Regimes", "Andrews Curves", "Extremes"],
+    index=2,
 )
 
 min_ts, max_ts = get_date_bounds()
 st.sidebar.caption(f"Data range: {min_ts.date()} → {max_ts.date()}")
 
-# Only show global range filters on range-based pages
-RANGE_PAGES = {"Overview", "Trends", "PCA & Regimes", "Andrews Curves", "Extremes"}
+# Range-based pages
+RANGE_PAGES = {"Overview", "Data Explorer (EDA)", "Trends", "PCA & Regimes", "Andrews Curves", "Extremes"}
 
 default_start = min_ts.date()
 default_end = max_ts.date()
@@ -81,11 +81,9 @@ if page in RANGE_PAGES:
         date_start = st.date_input("Start date", value=default_start, min_value=min_ts.date(), max_value=max_ts.date())
         date_end = st.date_input("End date (inclusive)", value=default_end, min_value=min_ts.date(), max_value=max_ts.date())
 else:
-    # Daily Snapshot has its own day picker; don't show global range controls
     date_start = default_start
     date_end = default_end
 
-# convert end inclusive to [start, end+1)
 date_start_ts = pd.Timestamp(date_start).tz_localize("UTC")
 date_end_ts = pd.Timestamp(date_end).tz_localize("UTC") + pd.Timedelta(days=1)
 range_start, range_end = date_start_ts.isoformat(), date_end_ts.isoformat()
@@ -96,6 +94,8 @@ dff = load_features_range(range_start, range_end) if page in RANGE_PAGES else pd
 # Router
 if page == "Overview":
     overview.render(dfc)
+elif page == "Data Explorer (EDA)":
+    eda_explorer.render(dfc)
 elif page == "Daily Snapshot":
     daily_snapshot.render(min_ts, max_ts, load_curated_range)
 elif page == "Trends":
