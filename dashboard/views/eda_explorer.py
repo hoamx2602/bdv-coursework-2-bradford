@@ -144,11 +144,12 @@ def render(dfc: pd.DataFrame):
     # =====================================================
     # TAB 2: Diurnal Cycle (Average by Hour)
     # =====================================================
+
     with tab_diurnal:
         st.subheader("Diurnal Cycle (Average by Hour)")
         st.caption(
             "Average 24-hour profiles reveal daily forcing effects. "
-            "Compare shapes rather than absolute magnitudes."
+            "If variables have different units, enable normalisation to compare shapes fairly."
         )
 
         # Select numeric variables
@@ -157,14 +158,20 @@ def render(dfc: pd.DataFrame):
             if c != "ts" and pd.api.types.is_numeric_dtype(dfc[c])
         ]
 
-        if len(numeric_cols) < 1:
+        if not numeric_cols:
             st.warning("No numeric variables available.")
         else:
             vars_sel = st.multiselect(
                 "Select variables to compare",
                 options=numeric_cols,
                 default=[c for c in ["solar_rad", "temp_out"] if c in numeric_cols],
-                help="Choose 1–3 variables for clarity."
+                help="Choose 1–4 variables."
+            )
+
+            normalise = st.checkbox(
+                "Normalise variables (z-score)",
+                value=True,
+                help="Converts variables to unitless z-scores (mean=0, std=1) to compare diurnal shapes."
             )
 
             if len(vars_sel) == 0:
@@ -176,6 +183,18 @@ def render(dfc: pd.DataFrame):
                 d["ts"] = pd.to_datetime(d["ts"], utc=True, errors="coerce")
                 d = d.dropna(subset=["ts"])
 
+                # Optional z-score normalisation (per variable, over the selected range)
+                if normalise:
+                    for v in vars_sel:
+                        mu = d[v].mean(skipna=True)
+                        sd = d[v].std(skipna=True)
+                        if sd and sd > 0:
+                            d[v] = (d[v] - mu) / sd
+                        else:
+                            # If no variance, set to 0 to avoid NaNs exploding
+                            d[v] = 0.0
+
+                # Hour-of-day aggregation
                 d["hour"] = d["ts"].dt.hour
                 g = d.groupby("hour")[vars_sel].mean(numeric_only=True).reset_index()
 
@@ -190,19 +209,27 @@ def render(dfc: pd.DataFrame):
                         )
                     )
 
+                y_title = "Standardised value (z-score)" if normalise else "Hourly mean (original units)"
+
                 fig.update_layout(
                     title="Diurnal Cycle (Average by Hour)",
                     xaxis_title="Hour of day (0–23)",
-                    yaxis_title="Average value",
+                    yaxis_title=y_title,
                     legend_title="Variable",
                 )
 
                 st.plotly_chart(fig, use_container_width=True)
 
-                st.info(
-                    "This plot supports interpretation of diurnal structure. "
-                    "In the report, Solar_Rad and Temp_Out are used to justify the physical meaning of PC1."
-                )
+                if normalise:
+                    st.info(
+                        "Normalisation removes unit differences, so the plot should be interpreted as "
+                        "relative diurnal patterns (shape/phase), not absolute magnitudes."
+                    )
+                else:
+                    st.info(
+                        "Variables are shown in original units. Interpret relative patterns rather than absolute magnitudes."
+                    )
+
 
     # =====================================================
     # TAB 3: Thermal Lag (Cross-Correlation)
