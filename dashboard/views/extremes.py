@@ -14,8 +14,18 @@ def render(dfc):
         st.warning(f"{metric} not available.")
         return
 
-    top = dfc[["ts", metric]].dropna().sort_values(metric, ascending=False).head(n)
-    st.dataframe(top, use_container_width=True)
+    top = (
+        dfc[["ts", metric]]
+        .dropna()
+        .sort_values(metric, ascending=False)
+        .head(n)
+        .reset_index(drop=True)
+    )
+
+    # Add Rank column
+    top.insert(0, "Rank", range(1, len(top) + 1))
+
+    st.dataframe(top, use_container_width=True, hide_index=True)
 
     fig = px.bar(top.sort_values("ts"), x="ts", y=metric, title=f"Top {n} extremes: {metric}")
     st.plotly_chart(fig, use_container_width=True)

@@ -2,6 +2,10 @@
 import os
 import streamlit as st
 import plotly.express as px
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+import plotly.graph_objects as go
+import numpy as np
 
 
 def render(dff):
@@ -10,6 +14,80 @@ def render(dff):
         "Dimensionality reduction and regime discovery using PCA and clustering. "
         "High-dimensional 3D exploration is delegated to TensorFlow Projector."
     )
+    st.subheader("PCA Explained Variance")
+
+    show_scree = st.toggle(
+        "Show scree plot (Elbow method)",
+        value=False,
+        help="Visualise explained variance to justify the number of retained principal components."
+    )
+
+    if show_scree:
+        # Use original feature columns (not PCs)
+        feature_cols = [c for c in dff.columns if c.startswith("f_")]
+
+        if len(feature_cols) < 2:
+            st.warning("Not enough features available to compute PCA.")
+        else:
+            X = dff[feature_cols].dropna()
+
+            # Standardise features
+            Xs = StandardScaler().fit_transform(X)
+
+            # Fit PCA with all possible components
+            pca = PCA()
+            pca.fit(Xs)
+
+            evr = pca.explained_variance_ratio_
+            pcs = [f"PC{i+1}" for i in range(len(evr))]
+
+            fig = go.Figure()
+
+            # Bars: explained variance ratio
+            fig.add_trace(
+                go.Bar(
+                    x=pcs,
+                    y=evr,
+                    name="Explained variance ratio"
+                )
+            )
+
+            # Line: scree curve (same EVR, but as line)
+            fig.add_trace(
+                go.Scatter(
+                    x=pcs,
+                    y=evr,
+                    mode="lines+markers",
+                    name="Scree curve"
+                )
+            )
+
+            fig.update_layout(
+                title="Scree Plot (Elbow Method for PCA)",
+                xaxis_title="Principal Components",
+                yaxis_title="Explained variance ratio",
+
+                legend=dict(
+                    x=1.02,        # đẩy sang phải ngoài chart
+                    y=1.0,
+                    xanchor="left",
+                    yanchor="top",
+                    bgcolor="rgba(0,0,0,0)"  # nền trong suốt
+                ),
+
+                margin=dict(r=120)  # chừa khoảng trống bên phải cho legend
+            )
+
+
+
+            st.plotly_chart(fig, use_container_width=True)
+
+            st.info(
+                "The elbow point indicates where additional components contribute marginal variance. "
+                "This plot is used for methodological justification rather than downstream analysis."
+            )
+
+
 
     if dff.empty:
         st.warning("No data in bradford.weather_features. Run: python -m analytics.compute_features")
