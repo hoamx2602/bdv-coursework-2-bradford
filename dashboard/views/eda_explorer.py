@@ -280,4 +280,3 @@ def render(dfc: pd.DataFrame):
             peak_lag = lags[idx]
             peak_corr = corrs[idx]
             st.success(f"Peak correlation at lag = {peak_lag} hours (r = {peak_corr:.2f})")
-            st.info("In the report, interpret positive peak lag as indoor temperature responding after solar forcing.")

@@ -131,11 +131,6 @@ def render(dff):
             use_container_width=True,
         )
 
-        st.info(
-            "This 2D projection is used for analytical interpretation and cluster comparison. "
-            "Higher-dimensional structure is explored separately using TensorFlow Projector."
-        )
-
     # -----------------------------
     # TensorFlow Projector Export
     # -----------------------------

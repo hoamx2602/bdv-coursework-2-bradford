@@ -7,7 +7,7 @@ def render(dfc):
     st.title("Extremes")
     st.caption("Identify extreme moments (wind excluded).")
 
-    metric = st.selectbox("Extreme metric", ["rain_rate", "temp_out", "solar_rad", "uv_index"], index=0)
+    metric = st.selectbox("Extreme metric", ["rain_rate", "temp_out", "solar_rad", "uv_index", "out_hum"], index=0)
     n = st.slider("Top N", 5, 50, 15)
 
     if metric not in dfc.columns:
