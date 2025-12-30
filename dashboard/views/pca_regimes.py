@@ -14,6 +14,11 @@ def render(dff):
         "Dimensionality reduction and regime discovery using PCA and clustering. "
         "High-dimensional 3D exploration is delegated to TensorFlow Projector."
     )
+
+    if dff.empty:
+        st.warning("No data in bradford.weather_features. Run: python -m analytics.compute_features")
+        return
+
     st.subheader("PCA Explained Variance")
 
     show_scree = st.toggle(
@@ -31,67 +36,62 @@ def render(dff):
         else:
             X = dff[feature_cols].dropna()
 
-            # Standardise features
-            Xs = StandardScaler().fit_transform(X)
+            if X.empty:
+                st.warning("Not enough valid data points (after dropping NaNs) to compute PCA.")
+            else:
+                # Standardise features
+                Xs = StandardScaler().fit_transform(X)
 
-            # Fit PCA with all possible components
-            pca = PCA()
-            pca.fit(Xs)
+                # Fit PCA with all possible components
+                pca = PCA()
+                pca.fit(Xs)
 
-            evr = pca.explained_variance_ratio_
-            pcs = [f"PC{i+1}" for i in range(len(evr))]
+                evr = pca.explained_variance_ratio_
+                pcs = [f"PC{i+1}" for i in range(len(evr))]
 
-            fig = go.Figure()
+                fig = go.Figure()
 
-            # Bars: explained variance ratio
-            fig.add_trace(
-                go.Bar(
-                    x=pcs,
-                    y=evr,
-                    name="Explained variance ratio"
+                # Bars: explained variance ratio
+                fig.add_trace(
+                    go.Bar(
+                        x=pcs,
+                        y=evr,
+                        name="Explained variance ratio"
+                    )
                 )
-            )
 
-            # Line: scree curve (same EVR, but as line)
-            fig.add_trace(
-                go.Scatter(
-                    x=pcs,
-                    y=evr,
-                    mode="lines+markers",
-                    name="Scree curve"
+                # Line: scree curve (same EVR, but as line)
+                fig.add_trace(
+                    go.Scatter(
+                        x=pcs,
+                        y=evr,
+                        mode="lines+markers",
+                        name="Scree curve"
+                    )
                 )
-            )
 
-            fig.update_layout(
-                title="Scree Plot (Elbow Method for PCA)",
-                xaxis_title="Principal Components",
-                yaxis_title="Explained variance ratio",
+                fig.update_layout(
+                    title="Scree Plot (Elbow Method for PCA)",
+                    xaxis_title="Principal Components",
+                    yaxis_title="Explained variance ratio",
 
-                legend=dict(
-                    x=1.02,        # đẩy sang phải ngoài chart
-                    y=1.0,
-                    xanchor="left",
-                    yanchor="top",
-                    bgcolor="rgba(0,0,0,0)"  # nền trong suốt
-                ),
+                    legend=dict(
+                        x=1.02,        # đẩy sang phải ngoài chart
+                        y=1.0,
+                        xanchor="left",
+                        yanchor="top",
+                        bgcolor="rgba(0,0,0,0)"  # nền trong suốt
+                    ),
 
-                margin=dict(r=120)  # chừa khoảng trống bên phải cho legend
-            )
+                    margin=dict(r=120)  # chừa khoảng trống bên phải cho legend
+                )
 
+                st.plotly_chart(fig, use_container_width=True)
 
-
-            st.plotly_chart(fig, use_container_width=True)
-
-            st.info(
-                "The elbow point indicates where additional components contribute marginal variance. "
-                "This plot is used for methodological justification rather than downstream analysis."
-            )
-
-
-
-    if dff.empty:
-        st.warning("No data in bradford.weather_features. Run: python -m analytics.compute_features")
-        return
+                st.info(
+                    "The elbow point indicates where additional components contribute marginal variance. "
+                    "This plot is used for methodological justification rather than downstream analysis."
+                )
 
     tab2d, tab_projector = st.tabs(["2D PCA", "TensorFlow Projector Export"])
 
