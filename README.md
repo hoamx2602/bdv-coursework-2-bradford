@@ -179,31 +179,9 @@ streamlit run dashboard/app.py
 ```bash
 python -c "import os; print(os.getenv('DATABASE_URL'))"
 ```
-
-### Cannot connect to AWS Postgres
-
-* Check security group allows your IP on port 5432
-* Check correct host/port/dbname/user/pass
-* If using SSL on RDS, ensure your driver supports it (often default works)
-
-### Streamlit shows an extra “pages” menu
-
-* Ensure your folder is `dashboard/views/` not `dashboard/pages/`
-
-### Andrews Curves page is slow
-
-* Reduce “Sample size” and “Curve resolution” in the sidebar settings on that page
-
 ---
 
-## 7) Reproducibility Notes
-
-* `weather_curated` contains typed, cleaned, time-indexed data.
-* `weather_features` stores derived analytics outputs (PCA + cluster labels), enabling consistent visualisation across PCA plots, Andrews Curves, and TensorFlow Projector.
-
----
-
-## 8) Quick Start (Minimal)
+## 7) Quick Start (Minimal)
 
 ```bash
 pip install -r requirements.txt
@@ -213,7 +191,3 @@ python -m analytics.preprocessing
 python -m analytics.compute_features
 streamlit run dashboard/app.py
 ```
-
----
-
-Nếu bạn paste cho mình `requirements.txt` hiện tại (hoặc `pip freeze | head -n 50`) mình sẽ chỉnh lại README cho đúng 100% theo repo của bạn (tên module, đường dẫn file CSV, v.v.).

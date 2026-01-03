@@ -37,7 +37,12 @@ def render(dff):
             X = dff[feature_cols].dropna()
 
             if X.empty:
-                st.warning("Not enough valid data points (after dropping NaNs) to compute PCA.")
+                st.warning(
+                    f"Not enough valid data points to compute PCA (rows={len(X)}). "
+                    f"Found {len(feature_cols)} feature columns: {feature_cols}. "
+                    "This usually means the 'f_*' columns in 'weather_features' are missing or contain NaNs. "
+                    "Try ensuring your data is fresh: python -m analytics.compute_features"
+                )
             else:
                 # Standardise features
                 Xs = StandardScaler().fit_transform(X)

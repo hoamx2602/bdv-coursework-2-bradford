@@ -61,10 +61,9 @@ def get_date_bounds():
 
 # Sidebar navigation
 st.sidebar.title("🌦️ Bradford Weather")
-page = st.sidebar.radio(
     "Navigation",
     ["Overview", "Data Explorer (EDA)", "Daily Snapshot", "Trends", "PCA & Regimes", "Andrews Curves", "Extremes"],
-    index=2,
+    index=0,
 )
 
 min_ts, max_ts = get_date_bounds()
