@@ -1,7 +1,3 @@
-Dưới đây là README mẫu (bạn copy thẳng vào `README.md`) để người khác clone repo về là **chạy được ngay** với **AWS Postgres**, **Python-only** (không cần psql), có cả pipeline analytics + dashboard + TensorFlow Projector + Andrews Curves.
-
----
-
 # Bradford Weather Visual Analytics
 
 End-to-end visual analytics pipeline for multivariate weather station data:
@@ -164,7 +160,6 @@ streamlit run dashboard/app.py
 * PCA & Regimes (2D/3D PCA + cluster summary)
 * Andrews Curves (multivariate curves coloured by cluster)
 * Extremes (top-N peaks)
-* Projector Export (download TSV files)
 
 ---
 

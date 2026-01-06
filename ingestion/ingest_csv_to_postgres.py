@@ -6,7 +6,7 @@ from database.db import get_engine
 
 def build_ts(df: pd.DataFrame, date_col: str, time_col: str, dayfirst: bool) -> pd.Series:
     # Combine Date + Time into a UTC timestamp
-    # Your CSV Date looks like "13/11/2024" => dayfirst=True
+    # CSV Date looks like "13/11/2024" => dayfirst=True
     dt = pd.to_datetime(
         df[date_col].astype(str) + " " + df[time_col].astype(str),
         errors="coerce",

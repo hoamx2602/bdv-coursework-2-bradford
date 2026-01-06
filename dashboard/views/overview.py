@@ -1,4 +1,3 @@
-# dashboard/views/overview.py
 import plotly.express as px
 import streamlit as st
 from dashboard.components import kpi_card, weather_icon, fmt

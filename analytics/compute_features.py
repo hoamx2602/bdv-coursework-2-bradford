@@ -1,4 +1,3 @@
-# analytics/compute_features.py
 import os
 import sys
 import pandas as pd
